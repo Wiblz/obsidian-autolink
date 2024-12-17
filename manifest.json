@@ -1,0 +1,9 @@
+{
+	"id": "obsidian-autolink",
+	"name": "Obsidian Autolink",
+	"version": "0.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "Provides a command to automatically insert a link to the current note into a selected (root) note.",
+	"author": "Wiblz",
+	"isDesktopOnly": true
+}
