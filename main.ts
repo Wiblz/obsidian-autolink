@@ -13,20 +13,21 @@ import {
 
 interface AutoLinkPluginSettings {
     targetNote: TFile;
+    defaultCountry: string;
     anchorHeader: string;
 }
 
 // Intentionally kept lowercase to unify variations
 const COUNTRIES: Record<string, string> = {
-    'ukraine': '🇺🇦',
     'germany': '🇩🇪',
     'austria': '🇦🇹',
     'canada': '🇨🇦',
+    'ukraine': '🇺🇦',
 }
 
-const DEFAULT_COUNTRY = 'germany';
 const DEFAULT_SETTINGS: Partial<AutoLinkPluginSettings> = {
-    anchorHeader: '# Applied'
+    anchorHeader: '# Applied',
+    defaultCountry: 'germany'
 }
 
 export default class AutoLinkPlugin extends Plugin {
@@ -35,7 +36,6 @@ export default class AutoLinkPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
 
-        // This adds a simple command that can be triggered anywhere
         this.addCommand({
             id: 'insert-link-into-target',
             name: `Autolink this note in ${this.settings.targetNote?.basename}`,
@@ -84,7 +84,7 @@ export default class AutoLinkPlugin extends Plugin {
                     country = directory.name.toLowerCase();
                 }
 
-                if (country !== DEFAULT_COUNTRY) {
+                if (country !== this.settings.defaultCountry) {
                     displayName += ` ${COUNTRIES[country]}`;
                 }
 
@@ -184,6 +184,21 @@ class AutoLinkSettingTab extends PluginSettingTab {
                 .setPlaceholder('No note selected')
                 .setValue(this.plugin.settings.targetNote?.path || '')
                 .setDisabled(true)  // Make it read-only
+            );
+
+        new Setting(containerEl)
+            .setName('Default Country')
+            .setDesc('Default country will not be marked with an emoji')
+            .addDropdown(dropdown => dropdown
+                .addOptions(Object.keys(COUNTRIES).reduce((acc: Record<string, string>, country: string) => {
+                    acc[country] = country.charAt(0).toUpperCase() + country.slice(1);
+                    return acc;
+                }, {}))
+                .setValue(this.plugin.settings.defaultCountry)
+                .onChange((value) => {
+                    this.plugin.settings.defaultCountry = value;
+                    this.plugin.saveSettings();
+                })
             );
 
         new Setting(containerEl)
